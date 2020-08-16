@@ -1,0 +1,31 @@
+#!/opt/python3.8.5/bin/python3.8
+import cgi 
+import shapefile
+from shapely.geometry import Polygon,Point
+
+form = cgi.FieldStorage()
+
+print("Content-type:text/html\r\n")
+
+if ('latitude' not in form or 'longitude' not in form):
+    print('not found')
+else:
+    sf = shapefile.Reader('/opt/simple/postcode_polygon')
+    shapes = sf.shapes()
+    pccount = len(shapes)
+    found = 0
+    for pc in range(pccount) :
+        rec = sf.record(pc)
+        s1 = sf.shape(pc)
+        geo = s1.points
+        poly = Polygon(geo)
+        latitude = float(form['latitude'].value)
+        longitude = float(form['longitude'].value)
+        if poly.contains(Point(longitude, latitude)):
+            found = 1
+            break
+    if (found == 1) :
+        print(rec.POSTCODE)
+    else:
+        print('not found')
+
